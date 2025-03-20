@@ -5,12 +5,32 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: trinkle23897/envpool-release:2023-01-02-5f1a5fd
+
     steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git wget curl clang-format clang-tidy swig qtdeclarative5-dev build-essential
+          wget https://go.dev/dl/go1.24.1.linux-amd64.tar.gz
+          sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.24.1.linux-amd64.tar.gz
+          export PATH=$PATH:/usr/local/go/bin
+          go version
+
+      - name: Install Bazel
+        run: |
+          go install github.com/bazelbuild/bazelisk@latest && ln -sf $HOME/go/bin/bazelisk $HOME/go/bin/bazel
+          go install github.com/bazelbuild/buildtools/buildifier@latest
+          $HOME/go/bin/bazel version
+
       - uses: actions/checkout@v3
       - name: Test
         run: |
           make bazel-test
+
       - name: Run clang-tidy
         run: |
           make clang-tidy
