@@ -2,6 +2,9 @@ name: Release PyPI Wheel
 
 # on: [push, pull_request]
 on:
+  # Allow manual runs
+  workflow_dispatch:
+  
   push:
     branches:
       - main
